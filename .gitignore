@@ -1,0 +1,43 @@
+# Build results
+bin/
+obj/
+out/
+[Bb]in/
+[Oo]bj/
+
+# Visual Studio / Rider
+.vs/
+*.user
+*.userosscache
+*.suo
+*.vspscc
+*.vssscc
+*.csproj.user
+*.csproj.user.*
+
+# Visual Studio Code
+.vscode/
+
+# NuGet
+packages/
+*.nuget.props
+*.nuget.targets
+
+# Test results
+TestResults/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# Local config / secrets
+appsettings.Development.json
+secrets.json
+*.localsettings.json
+
+# Optional: if you use dotnet‑style solution layout
+**/[Bb]in/
+**/[Oo]bj/
+
