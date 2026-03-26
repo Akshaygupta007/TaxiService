@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.EntityFrameworkCore;
 using TaxiService.DTOs.Requests;
+using TaxiService.Services.Interfaces;
 
 namespace TaxiService.Controllers
 {
@@ -13,84 +14,62 @@ namespace TaxiService.Controllers
     [ApiController]
     public class DriversController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
+        private readonly IDriverService _driverService;
+        private readonly ILogger<DriversController> _logger;
 
-        public DriversController(ApplicationDbContext context)
+        public DriversController(IDriverService driverService, ILogger<DriversController> logger)
         {
-            _context = context;
+            _driverService = driverService;
+            _logger = logger;
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateDriver([FromBody] CreateDriverRequest request)
         {
+            _logger.LogInformation("CreateDriver endpoint called");
+            
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            var existingLiceseNumber = _context.Drivers
-            .FirstOrDefault(d => d.LicenseNumber == request.LicenseNumber);
+            var result = await _driverService.CreateDriverAsync(request);
 
-            if (existingLiceseNumber != null)
-                return Conflict("License Number already exists");
+            _logger.LogInformation($"Driver created successfully with ID: {result.DriverID}");
 
-            var phoneExists = await _context.Drivers
-                .AnyAsync(d => d.PhoneNumber == request.PhoneNumber);
-            if (phoneExists)
-                return Conflict("A driver with this phone number already exists.");
 
-            var driver = new Driver
-            {
-                Name = request.Name,
-                LicenseNumber = request.LicenseNumber.Trim(),
-                PhoneNumber = request.PhoneNumber.Trim(),
-                CreatedAt = DateTime.UtcNow,
-                IsAvailable = true
-            };
-            await _context.Drivers.AddAsync(driver);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction(nameof(CreateDriver), new { id = driver.DriverID }, new
+            return CreatedAtAction(nameof(CreateDriver), new { id = result.DriverID }, new
             {
                 message = "Driver created successfully.",
-                driverId = driver.DriverID
+                driverId = result.DriverID
             });
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAllDrivers()
         {
-            var drivers = await _context.Drivers.ToListAsync();
+            _logger.LogInformation("GetAllDrivers endpoint called");
+            var drivers = await _driverService.GetAllDriversAsync();
+            _logger.LogInformation($"Retrieved {drivers.Count} drivers.");
             return Ok(drivers);
         }
+
         [HttpGet("{id}")]
         public async Task<IActionResult> GetDriverById(int id)
         {
-            var driver = await _context.Drivers
-                         .Include(d => d.Vehicles)
-                         .ThenInclude(dv => dv.Vehicle)
-                         .FirstOrDefaultAsync(d => d.DriverID == id);
-
-            if (driver == null)
-                return NotFound($"Driver with ID {id} not found.");
+            _logger.LogInformation($"GetDriverById endpoint called with ID: {id}");
+            var driver = await _driverService.GetDriverByIdAsync(id);
+            _logger.LogInformation($"Retrieved driver with ID: {id}");
             return Ok(driver);
         }
 
-        [HttpPatch("{id}")]
-        public async Task<IActionResult> PartialUpdate(int id, [FromBody] UpdateDriverRequest request)
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateDriverRequest request)
         {
+            _logger.LogInformation($"UpdateDriver endpoint called with ID: {id}");
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
+            var driver = await _driverService.UpdateDriverAsync(id, request);
+            _logger.LogInformation($"Driver updated successfully with ID: {id}");
 
-            var driver = await _context.Drivers.FirstOrDefaultAsync(d => d.DriverID == id);
-            if (driver == null)
-                return NotFound($"Driver with ID {id} not found.");
-            // if more fields are added in future, we can use AutoMapper to map non-null fields from request to entity
-            if (!string.IsNullOrEmpty(request.Name))
-                driver.Name = request.Name.Trim();
-            if (!string.IsNullOrEmpty(request.PhoneNumber))
-                driver.PhoneNumber = request.PhoneNumber.Trim();
-            if (!string.IsNullOrEmpty(request.LicenseNumber))
-                driver.LicenseNumber = request.LicenseNumber.Trim();
-            await _context.SaveChangesAsync();
             return Ok(new
             {
                 message = "Driver updated successfully.",
@@ -99,53 +78,37 @@ namespace TaxiService.Controllers
 
         }
 
-
         [HttpGet("available-drivers")]
         public async Task<IActionResult> GetAvailableDrivers()
         {
-            var availableDrivers = await _context.Drivers
-                .Where(d => d.IsAvailable)
-                .ToListAsync();
-            return Ok(availableDrivers);
+
+            _logger.LogInformation("GetAvailableDrivers endpoint called");
+            var drivers = await _driverService.GetAvailableDriversAsync();
+            _logger.LogInformation($"Retrieved {drivers.Count} available drivers.");
+            return Ok(drivers);
         }
 
         [HttpPost("toggle-availability/{id}")]
         public async Task<IActionResult> ToggleDriverAvailability(int id)
         {
-            var driver = await _context.Drivers.FirstOrDefaultAsync(d => d.DriverID == id);
-            if (driver == null)
-                return NotFound($"Driver with ID {id} not found.");
+            _logger.LogInformation($"ToggleDriverAvailability endpoint called with ID: {id}");
+            var driver = await _driverService.ToggleAvailabilityAsync(id);
+            _logger.LogInformation($"Driver availability toggled successfully for ID: {id} to {(driver.IsAvailable ? "available" : "unavailable")}");
 
-            driver.IsAvailable = !driver.IsAvailable;
-            await _context.SaveChangesAsync();
-
-            return Ok(new
-            {
-                message = $"Driver availability toggled to {(driver.IsAvailable ? "available" : "unavailable")}.",
-                driverId = driver.DriverID,
-                isAvailable = driver.IsAvailable
-            });
+            return Ok(driver);
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteDriver(int id)
         {
-            var driver = await _context.Drivers.FirstOrDefaultAsync(d => d.DriverID == id);
-            if (driver == null)
-                return NotFound($"Driver with ID {id} not found.");
 
-            // Check if driver has active vehicle assignments
-            var hasVehicles = await _context.DriverVehicles
-                .AnyAsync(dv => dv.DriverID == id);
-            if (hasVehicles)
-                return Conflict("Cannot delete driver — they are still assigned to vehicles.");
-
-            _context.Drivers.Remove(driver);
-            await _context.SaveChangesAsync();
+            _logger.LogInformation($"DeleteDriver endpoint called with ID: {id}");
+            await _driverService.DeleteDriverAsync(id);
+            _logger.LogInformation($"Driver deleted successfully with ID: {id}");
             return Ok(new
             {
                 message = "Driver deleted successfully.",
-                driverId = driver.DriverID
+                driverId = id
             });
         }
     }

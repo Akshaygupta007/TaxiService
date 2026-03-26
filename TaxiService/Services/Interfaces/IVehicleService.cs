@@ -10,7 +10,7 @@ namespace TaxiService.Services.Interfaces
         Task<List<VehicleResponse>> GetAllVehiclesAsync();
         Task<List<VehicleResponse>> GetAvailableVehiclesAsync();
 
-        Task AssignDriverToVehicleAsync(AssignDriverRequest request);
+        Task<VehicleResponse> AssignDriverToVehicleAsync(AssignDriverRequest request);
         Task<VehicleResponse> UpdateVehicleAsync(int vehicleId, UpdateVehicleRequest request);
         Task DeleteVehicleAsync(int vehicleId);
     }

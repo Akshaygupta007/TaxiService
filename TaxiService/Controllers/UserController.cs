@@ -13,13 +13,12 @@ namespace TaxiService.Controllers
     [Route("api/[controller]")]
     public class UserController : ControllerBase
     {
-        private readonly ApplicationDbContext _context;
         private readonly IUserService _userService;
         private readonly ILogger<UserController> _logger;
 
-        public UserController(ApplicationDbContext context, IUserService userService, ILogger<UserController> logger)
+        public UserController( IUserService userService, ILogger<UserController> logger)
         {
-            _context = context;
+
             _userService = userService;
             _logger = logger;
         }
@@ -105,7 +104,11 @@ namespace TaxiService.Controllers
 
             _logger.LogInformation($"User deleted successfully: {id}");
 
-            return NoContent();
+            return Ok(new
+            {
+                message = "User deleted successfully.",
+                userId = id
+            });
 
         }
     }

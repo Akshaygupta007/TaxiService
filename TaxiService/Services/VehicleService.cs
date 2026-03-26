@@ -58,7 +58,7 @@ namespace TaxiService.Services
         }
 
 
-        public async Task AssignDriverToVehicleAsync(AssignDriverRequest request)
+        public async Task<VehicleResponse> AssignDriverToVehicleAsync(AssignDriverRequest request)
         {
             _logger.LogInformation("Assigning driver with ID {DriverID} to vehicle with ID {VehicleID}", request.DriverID, request.VehicleID);
             if (request == null)
@@ -111,7 +111,7 @@ namespace TaxiService.Services
             await _vehicleRepository.SaveChangesAsync();
             await _driverRepository.SaveChangesAsync();
             _logger.LogInformation("Driver with ID {DriverID} assigned to vehicle with ID {VehicleID} successfully", request.DriverID, request.VehicleID);
-
+            return _mapper.Map<VehicleResponse>(vehicle);
         }
 
 
