@@ -5,10 +5,15 @@ namespace TaxiService.Repositories.Interfaces
     public interface ICabTypeRepository
     {
         Task<CabType?> GetByIdAsync(int id);
-        Task<IEnumerable<CabType>> GetAllAsync();
-        Task AddAsync(CabType cabType);
+        Task<IList<CabType>> GetAllAsync();
+        Task<CabType> AddAsync(CabType cabType);
+
+        Task SaveChangesAsync();
+        Task <CabType?> CabTypeNameExistsAsync(string cabTypeName);
+
         Task UpdateAsync(CabType cabType);
 
         Task DeleteAsync(CabType cabType);
+
     }
 }

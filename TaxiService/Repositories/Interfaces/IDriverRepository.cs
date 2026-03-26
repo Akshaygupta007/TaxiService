@@ -1,13 +1,18 @@
-﻿using TaxiService.Entities;
+﻿using TaxiService.DTOs.Responses;
+using TaxiService.Entities;
 
 namespace TaxiService.Repositories.Interfaces
 {
     public interface IDriverRepository
     {
         Task<Driver?> GetByIdAsync(int id);
-        Task<IEnumerable<Driver>> GetAvailableDriversAsync();
-        Task<IEnumerable<Driver>> GetAllAsync();
-        Task AddAsync(Driver driver);
+        Task<IList<Driver>> GetAvailableDriversAsync();
+        Task<IList<Driver>> GetAllAsync();
+        Task<Driver> AddAsync(Driver driver);
+
+        Task<Driver?> GetByLicenseAsync(string licenseNumber);
+        Task<Driver?> GetByPhoneNumberAsync(string phoneNumber);
+        Task SaveChangesAsync();
         Task UpdateAsync(Driver driver);
 
         Task DeleteAsync(Driver driver);

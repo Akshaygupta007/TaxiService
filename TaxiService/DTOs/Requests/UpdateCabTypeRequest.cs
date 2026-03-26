@@ -4,6 +4,7 @@ namespace TaxiService.DTOs.Requests
 {
     public class UpdateCabTypeRequest
     {
+        [Required]
         [StringLength(50)]
         public string? CabTypeName { get; set; }
 

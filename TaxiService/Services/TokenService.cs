@@ -35,10 +35,10 @@ namespace TaxiService.Services
                     new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString()),
                     new Claim(ClaimTypes.Email, user.Email),
                     new Claim(ClaimTypes.Name, user.Name),
-                    new Claim("UserId", user.UserID.ToString()),
-                    new Claim(ClaimTypes.Role, "Admin"),
-                    new Claim(ClaimTypes.Role, "User"),
-                    new Claim(ClaimTypes.Role, "Driver")
+                    new Claim("UserId", user.UserID.ToString())
+                    //new Claim(ClaimTypes.Role, "Admin"),
+                    //new Claim(ClaimTypes.Role, "User"),
+                    //new Claim(ClaimTypes.Role, "Driver")
                 };
 
                 // Create security key

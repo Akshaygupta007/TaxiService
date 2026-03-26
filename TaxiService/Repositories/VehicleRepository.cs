@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Numerics;
 using TaxiService.DataDb;
 using TaxiService.Entities;
 using TaxiService.Repositories.Interfaces;
@@ -19,36 +20,47 @@ namespace TaxiService.Repositories
             return await _context.Vehicles.FindAsync(id);
         }
 
-        public async Task<IEnumerable<Vehicle>> GetAllAsync()
+        public async Task<IList<Vehicle>> GetAllAsync()
         {
             return await _context.Vehicles.ToListAsync();
         }
 
-        public async Task AddAsync(Vehicle vehicle)
+        public async Task<Vehicle?> GetByVehicleNumberAsync(string vehicleNumber)
+        {
+            return await _context.Vehicles.FirstOrDefaultAsync(v => v.VehicleNumber == vehicleNumber);
+        }
+
+        public async Task<IList<Vehicle>> GetAvailableVehiclesAsync()
+        {
+            return await _context.Vehicles.Where(d => d.IsAvailable).ToListAsync();
+        }
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task<Vehicle> AddAsync(Vehicle vehicle)
         {
             await _context.Vehicles.AddAsync(vehicle);
-            await _context.SaveChangesAsync();
+            return vehicle;
         }
 
         public async Task AssignDriver(DriverVehicle driverVehicle)
         {
-
             await _context.DriverVehicles.AddAsync(driverVehicle);
-            await _context.SaveChangesAsync();
-
         }
 
         public async Task UpdateAsync(Vehicle vehicle)
         {
             _context.Vehicles.Update(vehicle);
-            await _context.SaveChangesAsync();
+            await Task.CompletedTask;
         }
 
         public async Task DeleteAsync(Vehicle vehicle)
         {
 
             _context.Vehicles.Remove(vehicle);
-            await _context.SaveChangesAsync();
+            await Task.CompletedTask;
 
         }
     }

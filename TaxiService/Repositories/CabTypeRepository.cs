@@ -18,26 +18,35 @@ namespace TaxiService.Repositories
         {
             return await _context.CabTypes.FindAsync(id);
         }
-        public async Task<IEnumerable<CabType>> GetAllAsync()
+        public async Task<IList<CabType>> GetAllAsync()
         {
             return await _context.CabTypes.ToListAsync();
         }
-        public async Task AddAsync(CabType cabType)
+        public async Task<CabType> AddAsync(CabType cabType)
         {
             await _context.CabTypes.AddAsync(cabType);
-            await _context.SaveChangesAsync();
-
+            return cabType;
         }
+        public async Task SaveChangesAsync()
+        {
+            await _context.SaveChangesAsync();
+        }
+        public async Task<CabType?> CabTypeNameExistsAsync(string cabTypeName)
+        {
+            return await _context.CabTypes
+                .FirstOrDefaultAsync(c => c.CabTypeName.ToLower() == cabTypeName.ToLower());
+        }
+
         public async Task UpdateAsync(CabType cabType)
         {
             _context.CabTypes.Update(cabType);
-            await _context.SaveChangesAsync();
+            await Task.CompletedTask;
         }
 
         public async Task DeleteAsync(CabType cabType)
         {
             _context.CabTypes.Remove(cabType);
-            await _context.SaveChangesAsync();
+            await Task.CompletedTask;
         }
     }
 }

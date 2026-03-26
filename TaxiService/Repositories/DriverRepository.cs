@@ -19,36 +19,49 @@ namespace TaxiService.Repositories
         {
             return await _context.Drivers.FindAsync(id);
         }
-
-        public async Task<IEnumerable<Driver>> GetAllAsync()
+        public async Task<Driver?> GetByLicenseAsync(string licenseNumber)
         {
-            return await _context.Drivers.ToListAsync();
+            return await _context.Drivers.FirstOrDefaultAsync(d => d.LicenseNumber == licenseNumber);
         }
 
-        public async Task AddAsync(Driver Driver)
+        public async Task<Driver?> GetByPhoneNumberAsync(string phoneNumber)
         {
-            await _context.Drivers.AddAsync(Driver);
-            await _context.SaveChangesAsync();
+            return await _context.Drivers.FirstOrDefaultAsync(d => d.PhoneNumber == phoneNumber);
+        }
+        public async Task<IList<Driver>> GetAllAsync()
+        {
+            return await _context.Drivers
+                    .Include(d => d.Vehicle)
+                    .ThenInclude(v => v.CabType)
+                    .ToListAsync();
         }
 
-        public async Task<IEnumerable<Driver>> GetAvailableDriversAsync()
+        public async Task<Driver> AddAsync(Driver driver)
+        {
+            await _context.Drivers.AddAsync(driver);
+            return driver;
+        }
+
+        public async Task<IList<Driver>> GetAvailableDriversAsync()
         {
             return await _context.Drivers.Where(d => d.IsAvailable).ToListAsync();
         }
 
-        public async Task UpdateAsync(Driver Driver)
+        public async Task SaveChangesAsync()
         {
-            _context.Drivers.Update(Driver);
             await _context.SaveChangesAsync();
         }
 
-        public async Task DeleteAsync(Driver Driver)
+        public async Task UpdateAsync(Driver driver)
         {
-
-            _context.Drivers.Remove(Driver);
-            await _context.SaveChangesAsync();
-
+            _context.Drivers.Update(driver);
+            await Task.CompletedTask;
         }
 
+        public async Task DeleteAsync(Driver driver)
+        {
+            _context.Drivers.Remove(driver);
+            await Task.CompletedTask;
+        }
     }
 }

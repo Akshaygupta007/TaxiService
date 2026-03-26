@@ -1,6 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using TaxiService.Common;
-using TaxiService.Services.Interfaces;
+﻿using TaxiService.Services.Interfaces;
 using TaxiService.Repositories.Interfaces;
 using System.Text;
 using System.Security.Cryptography;

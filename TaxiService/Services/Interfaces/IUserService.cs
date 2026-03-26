@@ -11,6 +11,7 @@ namespace TaxiService.Services.Interfaces
         Task<UserResponse> LoginAsync(LoginRequest request);
         Task<List<UserResponse>> GetAllUsersAsync();
         Task<UserResponse> GetUserByIdAsync(int id);
+
         Task DeleteUserAsync(int id);
     }
 }

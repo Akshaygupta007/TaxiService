@@ -28,18 +28,15 @@ namespace TaxiService.DataDb
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<DriverVehicle>()
-                .HasKey(dv => new { dv.DriverID, dv.VehicleID });  // Composite PK
+            modelBuilder.Entity<Driver>()
+                .HasOne(d => d.Vehicle)
+                .WithOne(v => v.Driver)
+                .HasForeignKey<Driver>(d => d.VehicleId);
 
-            modelBuilder.Entity<DriverVehicle>()
-                .HasOne(dv => dv.Driver)
-                .WithMany(d => d.Vehicles)
-                .HasForeignKey(dv => dv.DriverID);
-
-            modelBuilder.Entity<DriverVehicle>()
-                .HasOne(dv => dv.Vehicle)
-                .WithMany(v => v.Drivers)
-                .HasForeignKey(dv => dv.VehicleID);
+            modelBuilder.Entity<Vehicle>()
+                .HasOne(v => v.CabType)
+                .WithOne()
+                .HasForeignKey<Vehicle>(v => v.CabTypeID); // Fixed: Specify the correct entity type for HasForeignKey
 
             modelBuilder.Entity<Vehicle>()
                 .HasIndex(v => v.VehicleNumber)
@@ -57,24 +54,15 @@ namespace TaxiService.DataDb
                 .HasIndex(d => d.LicenseNumber)
                 .IsUnique();
 
+            modelBuilder.Entity<CabType>()
+                .HasIndex(c => c.CabTypeName)
+                .IsUnique();
+
             modelBuilder.Entity<Driver>()
                 .HasIndex(d => d.PhoneNumber)
                 .IsUnique();
-            
-            modelBuilder.Entity<CabType>()
-                .HasMany(e => e.Vehicles)
-                .WithOne(v => v.CabType)
-                .HasForeignKey(v => v.CabTypeID)
-                .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<Vehicle>()
-                .HasMany(e => e.Drivers)
-                .WithOne(dv => dv.Vehicle)
-                .HasForeignKey(dv => dv.VehicleID)
-                .OnDelete(DeleteBehavior.Cascade);
-            
             SeedData(modelBuilder);
-
         }
         private void SeedData(ModelBuilder modelBuilder)
         {
